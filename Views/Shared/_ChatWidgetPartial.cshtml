@@ -1,0 +1,247 @@
+﻿@{
+    var userId = Context.Session.GetString("UserId");
+    bool isLoggedIn = !string.IsNullOrEmpty(userId);
+}
+@if (isLoggedIn)
+{
+    <div id="chatWidgetContainer" class="position-fixed bottom-0 end-0 me-2 mb-2 me-md-4 mb-md-3 z-3">
+        <button id="toggleChatBtn" class="btn btn-dark rounded-pill shadow-lg d-flex align-items-center gap-2 px-3 py-2 fw-bold">
+            💬 <span>Chat</span>
+            <span class="badge rounded-pill bg-danger d-none" id="unreadBadge">0</span>
+        </button>
+
+        <div id="chatBox" class="card shadow-lg border-0 rounded-4 overflow-hidden d-none custom-chat-box">
+            <div class="card-header bg-dark text-white d-flex align-items-center justify-content-between py-2 px-3 flex-shrink-0">
+                <span class="fw-bold">Messages</span>
+                <button type="button" id="closeChatBtn" class="btn-close btn-close-white btn-sm" aria-label="Close"></button>
+            </div>
+
+            <div class="card-body p-0 d-flex flex-row overflow-hidden flex-grow-1">
+
+                <div class="border-end bg-light p-2 overflow-auto chat-contacts-col" id="conversationList">
+                    <div class="input-group input-group-sm mb-2">
+                        <input type="text" id="chatSearchInput" class="form-control rounded-pill" placeholder="Search user...">
+                    </div>
+
+                    <div class="list-group list-group-flush rounded-3" id="contactItemsContainer">
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column bg-white chat-main-col" id="chatMainThread">
+                    <div id="chatEmptyState" class="d-flex flex-column align-items-center justify-content-center h-100 text-muted p-4 text-center">
+                        <div class="fs-1">💬</div>
+                        <h6 class="fw-bold mt-2">Welcome to Marketplace Chat</h6>
+                        <small>Select a conversation or start chatting!</small>
+                    </div>
+
+                    <div id="activeChatArea" class="d-none flex-column h-100">
+                        <div class="p-2 border-bottom fw-bold bg-light d-flex align-items-center gap-2" id="activeSellerName">
+                            User
+                        </div>
+                        <div class="p-3 overflow-auto flex-grow-1" id="messageHistory">
+                        </div>
+                        <div class="p-2 border-top d-flex gap-2">
+                            <input type="hidden" id="activeReceiverId" value="" />
+                            <input type="text" id="chatInput" class="form-control form-control-sm rounded-pill" placeholder="Type a message...">
+                            <button id="sendMsgBtn" class="btn btn-dark btn-sm rounded-circle">➔</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const currentUserId = "@userId";
+            const toggleBtn = document.getElementById("toggleChatBtn");
+            const closeBtn = document.getElementById("closeChatBtn");
+            const chatBox = document.getElementById("chatBox");
+            const contactsContainer = document.getElementById("contactItemsContainer");
+            const messageHistory = document.getElementById("messageHistory");
+            const chatInput = document.getElementById("chatInput");
+            const sendBtn = document.getElementById("sendMsgBtn");
+            const searchInput = document.getElementById("chatSearchInput");
+
+            let activeReceiverId = null;
+
+            const chatConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/chatHub")
+                .withAutomaticReconnect()
+                .build();
+
+            chatConnection.on("ReceiveMessage", function (data) {
+                loadConversations();
+
+                if (activeReceiverId && (data.senderId == activeReceiverId || data.receiverId == activeReceiverId)) {
+                    fetchMessages(activeReceiverId);
+                }
+            });
+
+            chatConnection.start().catch(err => console.error("SignalR Connection Error: ", err));
+
+            if (toggleBtn && chatBox) {
+                toggleBtn.addEventListener("click", () => {
+                    chatBox.classList.toggle("d-none");
+                    if (!chatBox.classList.contains("d-none")) {
+                        loadConversations();
+                    }
+                });
+            }
+            if (closeBtn && chatBox) {
+                closeBtn.addEventListener("click", () => {
+                    chatBox.classList.add("d-none");
+                    chatBox.classList.remove("has-active-chat");
+                });
+            }
+
+            function loadConversations(callbackOnLoaded) {
+                fetch('/Chat/GetConversations')
+                    .then(res => res.json())
+                    .then(conversations => {
+                        contactsContainer.innerHTML = '';
+                        if (!conversations || conversations.length === 0) {
+                            contactsContainer.innerHTML = '<div class="p-3 text-muted small text-center">No chats yet</div>';
+                            if (callbackOnLoaded) callbackOnLoaded();
+                            return;
+                        }
+
+                        const contactsMap = new Map();
+                        conversations.forEach(item => {
+                            if (item.otherUserId && !contactsMap.has(item.otherUserId)) {
+                                contactsMap.set(item.otherUserId, {
+                                    id: item.otherUserId,
+                                    name: item.otherUserName,
+                                    avatar: item.otherUserProfilePicture,
+                                    lastMessage: item.content
+                                });
+                            }
+                        });
+
+                        contactsMap.forEach(contact => {
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'list-group-item list-group-item-action d-flex align-items-center gap-2 py-2 px-2 contact-item';
+                            btn.dataset.id = contact.id;
+                            btn.dataset.name = contact.name;
+
+                            let avatarHtml = contact.avatar
+                                ? `<img src="${contact.avatar}" class="rounded-circle object-fit-cover" style="width: 32px; height: 32px;" />`
+                                : `<div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.8rem;">${contact.name.charAt(0).toUpperCase()}</div>`;
+
+                            btn.innerHTML = `
+                                ${avatarHtml}
+                                <div class="text-truncate text-start flex-grow-1">
+                                    <div class="fw-bold small text-truncate">${contact.name}</div>
+                                    <div class="text-muted extra-small text-truncate" style="font-size: 0.75rem;">${contact.lastMessage}</div>
+                                </div>`;
+
+                            btn.addEventListener('click', () => openChatThread(contact.id, contact.name, contact.avatar, btn));
+                            contactsContainer.appendChild(btn);
+                        });
+
+                        if (callbackOnLoaded) callbackOnLoaded();
+                    })
+                    .catch(err => console.error("Error loading conversations:", err));
+            }
+
+            function openChatThread(otherUserId, otherUserName, avatarUrl, element) {
+                activeReceiverId = otherUserId;
+                document.getElementById('activeReceiverId').value = otherUserId;
+
+                chatBox.classList.add("has-active-chat");
+
+                const headerArea = document.getElementById('activeSellerName');
+                let avatarHeader = avatarUrl
+                    ? `<img src="${avatarUrl}" class="rounded-circle me-1" style="width:28px; height:28px; object-fit:cover;" />`
+                    : `<span class="badge bg-secondary rounded-circle me-1" style="width:28px; height:28px; line-height:20px;">${otherUserName.charAt(0).toUpperCase()}</span>`;
+
+                headerArea.innerHTML = `
+                    <button type="button" class="btn btn-sm btn-outline-dark me-1 d-md-none py-0 px-2" onclick="document.getElementById('chatBox').classList.remove('has-active-chat')">&larr;</button>
+                    <div class="d-flex align-items-center">${avatarHeader} <span>${otherUserName}</span></div>
+                `;
+
+                document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
+                if (element) {
+                    element.classList.add('active');
+                } else {
+                    const match = document.querySelector(`.contact-item[data-id="${otherUserId}"]`);
+                    if (match) match.classList.add('active');
+                }
+
+                document.getElementById('chatEmptyState').classList.add('d-none');
+                document.getElementById('activeChatArea').classList.remove('d-none');
+                document.getElementById('activeChatArea').classList.add('d-flex');
+
+                fetchMessages(otherUserId);
+            }
+
+            function fetchMessages(otherUserId) {
+                fetch(`/Chat/GetMessagesWithUser?otherUserId=${otherUserId}`)
+                    .then(res => res.json())
+                    .then(messages => {
+                        messageHistory.innerHTML = '';
+                        messages.forEach(msg => {
+                            const isMe = msg.senderId == currentUserId;
+                            const wrapper = document.createElement('div');
+                            wrapper.className = `d-flex mb-2 ${isMe ? 'justify-content-end' : 'justify-content-start'}`;
+
+                            const bubble = document.createElement('div');
+                            bubble.className = isMe
+                                ? 'bg-dark text-white p-2 rounded-3 small max-w-75'
+                                : 'bg-light text-dark p-2 rounded-3 small max-w-75 border';
+                            bubble.textContent = msg.content;
+
+                            wrapper.appendChild(bubble);
+                            messageHistory.appendChild(wrapper);
+                        });
+                        messageHistory.scrollTop = messageHistory.scrollHeight;
+                    });
+            }
+
+            function sendMessage() {
+                const text = chatInput.value.trim();
+                if (!text || !activeReceiverId) return;
+
+                const formData = new FormData();
+                formData.append('receiverId', activeReceiverId);
+                formData.append('messageText', text);
+
+                fetch('/Chat/SendMessage', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        chatInput.value = '';
+                    }
+                })
+                .catch(err => console.error("Error sending message:", err));
+            }
+
+            sendBtn.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+
+            searchInput.addEventListener('input', (e) => {
+                const filter = e.target.value.toLowerCase();
+                document.querySelectorAll('.contact-item').forEach(item => {
+                    const name = item.dataset.name.toLowerCase();
+                    item.style.display = name.includes(filter) ? 'flex' : 'none';
+                });
+            });
+
+            window.openChatWithUser = function (targetUserId, targetUserName) {
+                if (!chatBox) return;
+                chatBox.classList.remove("d-none");
+                loadConversations(() => {
+                    openChatThread(targetUserId, targetUserName || "User", null, null);
+                });
+            };
+        });
+    </script>
+}

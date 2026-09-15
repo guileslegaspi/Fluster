@@ -1,0 +1,228 @@
+:root {
+    --fluster-primary: #FF004F;
+    --fluster-amber: #C16D24;
+    --fluster-dark: #18181A;
+    --fluster-black: #0D0D0E;
+    --fluster-espresso: #251817;
+    --fluster-light-bg: #F8F9FA;
+}
+
+html {
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+body {
+    margin-bottom: 0;
+    width: 100%;
+    background-color: var(--fluster-light-bg);
+    color: var(--fluster-dark);
+}
+
+
+.filter-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem var(--fluster-primary);
+}
+
+
+.custom-navbar, .navbar-fluster {
+    background-color: var(--fluster-espresso) !important;
+    padding: 10px 20px;
+}
+
+    .custom-navbar .navbar-brand {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--fluster-primary) !important;
+        letter-spacing: -0.5px;
+    }
+
+    .custom-navbar .nav-link {
+        color: #ffffff !important;
+        margin-left: 15px;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+
+        .custom-navbar .nav-link:hover {
+            color: var(--fluster-primary) !important;
+        }
+
+.search-bar {
+    width: 100%;
+    max-width: 500px;
+}
+
+    .search-bar input {
+        border-radius: 6px 0 0 6px;
+        border: 1px solid #ddd;
+    }
+
+
+.overflow-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+    .overflow-auto::-webkit-scrollbar {
+        display: none;
+    }
+
+
+.btn-fluster-primary, .btn-search {
+    background-color: var(--fluster-primary);
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+}
+
+.btn-search {
+    padding: 6px 16px;
+    border-radius: 0 6px 6px 0;
+    transition: background-color 0.2s ease;
+}
+
+    .btn-fluster-primary:hover, .btn-search:hover {
+        background-color: #d90043;
+        color: #ffffff;
+    }
+
+.btn-fluster-amber {
+    background-color: var(--fluster-amber);
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+}
+
+    .btn-fluster-amber:hover {
+        background-color: #a3591b;
+        color: #ffffff;
+    }
+
+
+.fluster-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 12px;
+    height: 100%;
+}
+
+    .fluster-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.12) !important;
+    }
+
+.fluster-price {
+    color: var(--fluster-primary);
+    font-weight: 800;
+    font-size: 1.15rem;
+}
+
+
+.fluster-footer {
+    background-color: #ffffff;
+    color: #4a4a4a;
+    border-top: 3px solid var(--fluster-primary);
+    font-size: 0.85rem;
+}
+
+    .fluster-footer h6 {
+        color: var(--fluster-dark);
+        font-weight: 700;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+    }
+
+.fluster-footer-sub {
+    background-color: var(--fluster-black);
+    color: #888888;
+    font-size: 0.8rem;
+}
+
+
+@media (max-width: 991.98px) {
+    .custom-navbar .navbar-collapse {
+        background-color: var(--fluster-espresso);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+    }
+
+    .custom-navbar .nav-link {
+        margin-left: 0 !important;
+        padding: 0.5rem 0;
+    }
+
+    .search-bar {
+        max-width: 100% !important;
+    }
+}
+
+
+.custom-chat-box {
+    position: absolute;
+    bottom: 50px;
+    right: 0;
+    width: 680px;
+    height: 480px;
+    max-width: 95vw;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-contacts-col {
+    width: 35%;
+    min-width: 220px;
+    height: 100%;
+}
+
+.chat-main-col {
+    width: 65%;
+    height: 100%;
+    flex-grow: 1;
+}
+
+
+@media (max-width: 767.98px) {
+    .custom-chat-box {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: 100vw !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        z-index: 1055;
+    }
+
+    .chat-contacts-col {
+        width: 100% !important;
+    }
+
+    .chat-main-col {
+        width: 100% !important;
+    }
+
+    
+    .custom-chat-box.has-active-chat .chat-contacts-col {
+        display: none !important;
+    }
+
+    .custom-chat-box.has-active-chat .chat-main-col {
+        display: flex !important;
+    }
+}

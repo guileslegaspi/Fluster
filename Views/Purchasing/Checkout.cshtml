@@ -1,0 +1,87 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model OnlineMarketplace.DTO.CheckoutDto
+
+@{
+    ViewData["Title"] = "Checkout - Step 1";
+}
+
+<div class="container mt-4">
+    <h2>Checkout (Step 1 of 2)</h2>
+    <hr />
+
+    <form asp-controller="Purchasing" asp-action="ReviewOrder" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="row">
+            
+            <div class="col-md-7">
+                <div class="card mb-4">
+                    <div class="card-header fw-bold">Shipping & Payment</div>
+                    <div class="card-body">
+
+                        
+                        <div class="mb-3">
+                            <label asp-for="ShippingAddress" class="form-label">Shipping Address</label>
+                            <textarea asp-for="ShippingAddress" class="form-control" rows="3" required placeholder="Enter full address..."></textarea>
+                            <span asp-validation-for="ShippingAddress" class="text-danger"></span>
+                        </div>
+
+                        
+                        <div class="mb-3">
+                            <label asp-for="SelectedPaymentMethod" class="form-label">Payment Method</label>
+                            <select asp-for="SelectedPaymentMethod" class="form-select" required>
+                                <option value="">-- Select Payment Method --</option>
+                                <option value="COD">Cash on Delivery (COD)</option>
+                                <option value="PayMongo">Online Payment (GCash / Card / Maya via PayMongo)</option>
+                            </select>
+                            <span asp-validation-for="SelectedPaymentMethod" class="text-danger"></span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-header fw-bold">Items Summary</div>
+                    <ul class="list-group list-group-flush">
+                        @for (int i = 0; i < Model.Items.Count; i++)
+                        {
+
+                            <input type="hidden" asp-for="Items[i].ProductId" />
+                            <input type="hidden" asp-for="Items[i].ProductName" />
+                            <input type="hidden" asp-for="Items[i].UnitPrice" />
+                            <input type="hidden" asp-for="Items[i].Quantity" />
+                            <input type="hidden" asp-for="Items[i].CartId" />                    
+                            <input type="hidden" asp-for="Items[i].IsSelected" value="true" />
+
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>@Model.Items[i].ProductName</strong><br />
+                                    <small class="text-muted">Qty: @Model.Items[i].Quantity x ₱@Model.Items[i].UnitPrice.ToString("N2")</small>
+                                </div>
+                                <span class="fw-bold">₱@Model.Items[i].LineTotal.ToString("N2")</span>
+                            </li>
+                        }
+                    </ul>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <h5>Total Amount:</h5>
+                        <h4 class="text-primary">₱@Model.TotalPrice.ToString("N2")</h4>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-3">
+                    <button type="submit" class="btn btn-primary btn-lg">Next: Review Order &rarr;</button>
+                    <a asp-action="Cart" class="btn btn-outline-secondary">Back to Cart</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

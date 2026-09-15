@@ -1,0 +1,568 @@
+﻿@model IEnumerable<OnlineMarketplace.Models.OrderModel>
+
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+<div class="container py-5">
+
+    
+    <div class="mb-4">
+
+        <h2 class="fw-bold mb-1">
+            My Orders
+        </h2>
+
+        <p class="text-muted mb-0">
+            Track your purchases and follow your orders from payment to delivery.
+        </p>
+
+    </div>
+
+
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success
+                    alert-dismissible
+                    fade show
+                    border-0
+                    shadow-sm
+                    rounded-4"
+             role="alert">
+
+            <strong>Success:</strong>
+            @TempData["SuccessMessage"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
+
+        </div>
+    }
+
+
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger
+                    alert-dismissible
+                    fade show
+                    border-0
+                    shadow-sm
+                    rounded-4"
+             role="alert">
+
+            <strong>Something went wrong:</strong>
+            @TempData["ErrorMessage"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
+
+        </div>
+    }
+
+
+    
+    @if (!Model.Any())
+    {
+        <div class="card border-0
+                    shadow-sm
+                    rounded-4">
+
+            <div class="card-body
+                        text-center
+                        py-5
+                        px-4">
+
+                <div class="mb-3"
+                     style="font-size: 3rem;">
+                    🛍️
+                </div>
+
+                <h4 class="fw-bold mb-2">
+                    No orders yet
+                </h4>
+
+                <p class="text-muted mb-4">
+                    You haven't placed any orders yet.
+                    Explore the marketplace and find something you like.
+                </p>
+
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="btn btn-warning
+                          fw-bold
+                          px-4
+                          text-dark">
+
+                    Browse the Marketplace
+
+                </a>
+
+            </div>
+
+        </div>
+    }
+    else
+    {
+        
+        @foreach (var order in Model)
+        {
+            var statusClass =
+            order.Status == "Cancelled"
+            ? "status-cancelled"
+            : order.Status == "Processing"
+            ? "status-processing"
+            : order.Status == "Shipped"
+            ? "status-shipped"
+            : order.Status == "Received"
+            ? "status-received"
+            : order.Status == "Paid"
+            ? "status-paid"
+            : "status-unpaid";
+
+
+            <div class="card
+                            border-0
+                            shadow-sm
+                            rounded-4
+                            overflow-hidden
+                            mb-4
+                            order-card">
+
+
+                
+                <div class="card-body
+                                p-4
+                                border-bottom">
+
+                    <div class="d-flex
+                                    flex-column
+                                    flex-md-row
+                                    justify-content-between
+                                    align-items-md-center
+                                    gap-3">
+
+                        <div>
+
+                            <div class="small
+                                            text-muted
+                                            text-uppercase
+                                            fw-bold
+                                            mb-1">
+
+                                Order #@order.OrderId
+
+                            </div>
+
+                            <div class="fw-semibold">
+
+                                Placed on
+                                @order.OrderDate.ToString("MMM dd, yyyy")
+
+                            </div>
+
+                        </div>
+
+
+                        <span class="order-status @statusClass">
+
+                            @order.Status
+
+                        </span>
+
+                    </div>
+
+                </div>          
+                <div class="card-body p-4">
+
+                    <div class="small
+                                    text-muted
+                                    text-uppercase
+                                    fw-bold
+                                    mb-3">
+
+                        Items in this order
+
+                    </div>
+
+
+                    @foreach (var item in order.Details)
+                    {
+                        var imgUrl =
+                        !string.IsNullOrEmpty(item.Product?.Image)
+                        ? item.Product.Image
+                        : "/images/no-image.png";
+
+
+                        <div class="d-flex
+                                            align-items-center
+                                            gap-3
+                                            py-3
+                                            border-bottom
+                                            order-item">
+
+                            
+                            <div class="flex-shrink-0">
+
+                                <img src="@imgUrl"
+                                     class="rounded-3
+                                                    border"
+                                     style="width: 72px;
+                                                    height: 72px;
+                                                    object-fit: cover;"
+                                     alt="@item.Product?.ProductName" />
+
+                            </div>
+
+
+                            
+                            <div class="flex-grow-1
+                                                min-width-0">
+
+                                <div class="fw-bold
+                                                    text-truncate">
+
+                                    @(item.Product?.ProductName
+                                                            ?? "Product Unavailable")
+
+                                </div>
+
+                                <div class="small text-muted mt-1">
+
+                                    ₱@item.UnitPrice.ToString("N2")
+                                    × @item.Quantity
+
+                                </div>
+
+                            </div>
+
+
+                            
+                            <div class="text-end
+                                                flex-shrink-0">
+
+                                <div class="fw-bold">
+
+                                    ₱@((item.UnitPrice *
+                                                            item.Quantity)
+                                                            .ToString("N2"))
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                        }
+
+
+                    
+                    <div class="row g-4 mt-1">
+
+
+                        
+                        <div class="col-md-7">
+
+                            <div class="order-info-box
+                                            rounded-4
+                                            p-3">
+
+                                <div class="small
+                                                text-muted
+                                                text-uppercase
+                                                fw-bold
+                                                mb-3">
+
+                                    Delivery Information
+
+                                </div>
+
+
+                                <div class="mb-3">
+
+                                    <div class="small text-muted">
+                                        Shipping Address
+                                    </div>
+
+                                    <div class="fw-semibold">
+                                        @order.ShippingAddress
+                                    </div>
+
+                                </div>
+
+
+                                <div class="mb-0">
+
+                                    <div class="small text-muted">
+                                        Payment Method
+                                    </div>
+
+                                    <div class="fw-semibold">
+                                        @order.PaymentMethod
+                                    </div>
+
+                                </div>
+
+
+                                @if (!string.IsNullOrEmpty(
+                                                        order.TrackingNumber))
+                                {
+                                    <div class="tracking-box
+                                                        rounded-3
+                                                        mt-3
+                                                        p-3">
+
+                                        <div class="small
+                                                            text-muted
+                                                            mb-1">
+
+                                            Tracking Number
+
+                                        </div>
+
+                                        <div class="fw-bold
+                                                            text-primary">
+
+                                            @order.TrackingNumber
+
+                                        </div>
+
+                                    </div>
+                                }
+
+                            </div>
+
+                        </div>
+
+
+                        
+                        <div class="col-md-5">
+
+                            <div class="order-total-box
+                                            rounded-4
+                                            p-3
+                                            h-100
+                                            d-flex
+                                            flex-column
+                                            justify-content-center">
+
+                                <div class="small
+                                                text-muted
+                                                text-uppercase
+                                                fw-bold
+                                                mb-1">
+
+                                    Total Amount
+
+                                </div>
+
+                                <div class="fw-bold
+                                                order-total">
+
+                                    ₱@order.TotalPrice.ToString("N2")
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    
+                    <div class="d-flex
+                                    flex-column
+                                    flex-md-row
+                                    justify-content-end
+                                    gap-2
+                                    mt-4">
+
+
+                        @if (order.Status == "Shipped")
+                        {
+                            <form asp-controller="Purchasing"
+                                  asp-action="MarkAsReceived"
+                                  method="post">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="orderId"
+                                       value="@order.OrderId" />
+
+                                <button type="submit"
+                                        class="btn btn-success
+                                                       fw-bold
+                                                       px-4">
+
+                                    ✔ Mark as Received
+
+                                </button>
+
+                            </form>
+                        }
+
+
+                        @if (order.Status == "Unpaid" &&
+                                        order.PaymentMethod == "PayMongo")
+                        {
+                            <form asp-controller="Purchasing"
+                                  asp-action="PayNow"
+                                  method="get">
+
+                                <input type="hidden"
+                                       name="orderId"
+                                       value="@order.OrderId" />
+
+                                <button type="submit"
+                                        class="btn btn-warning
+                                                       fw-bold
+                                                       text-dark
+                                                       px-4">
+
+                                    💳 Continue to Payment
+
+                                </button>
+
+                            </form>
+                        }
+
+
+                        @if (order.Status == "Unpaid" ||
+                                        order.Status == "Processing")
+                        {
+                            <form asp-controller="Purchasing"
+                                  asp-action="CancelOrder"
+                                  method="post"
+                                  class="js-confirm-form"
+                                  data-confirm-title="Cancel Order?"
+                                  data-confirm-message="Are you sure you want to cancel this order?"
+                                  data-confirm-button="Yes, Cancel Order">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="orderId"
+                                       value="@order.OrderId" />
+
+                                <button type="submit"
+                                        class="btn btn-outline-danger
+                                                       fw-bold
+                                                       px-4">
+
+                                    Cancel Order
+
+                                </button>
+
+                            </form>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+    }
+</div>
+
+<style>
+    .order-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.08) !important;
+        }
+
+    .order-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.45rem 0.85rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .status-unpaid {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-paid {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .status-processing {
+        background: #cff4fc;
+        color: #055160;
+    }
+
+    .status-shipped {
+        background: #cfe2ff;
+        color: #084298;
+    }
+
+    .status-received {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .status-cancelled {
+        background: #f8d7da;
+        color: #842029;
+    }
+
+    .order-info-box {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+    }
+
+    .tracking-box {
+        background: #eef5ff;
+        border: 1px solid #d7e6ff;
+    }
+
+    .order-total-box {
+        background: #fffaf0;
+        border: 1px solid #f3e5c2;
+    }
+
+    .order-total {
+        font-size: 1.7rem;
+        color: var(--fluster-dark);
+    }
+
+    .order-item:last-child {
+        border-bottom: 0 !important;
+    }
+
+    @@media (max-width: 575.98px) {
+
+        .order-item {
+            align-items: flex-start !important;
+        }
+
+            .order-item img {
+                width: 60px !important;
+                height: 60px !important;
+            }
+
+        .order-total {
+            font-size: 1.4rem;
+        }
+    }
+
+}</style>

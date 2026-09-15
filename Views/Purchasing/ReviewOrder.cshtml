@@ -1,0 +1,70 @@
+﻿@model OnlineMarketplace.DTO.CheckoutDto
+
+@{
+    ViewData["Title"] = "Review Order - Step 2";
+}
+
+<div class="container mt-4">
+    <h2>Review Your Order (Step 2 of 2)</h2>
+    <p class="text-muted">Please confirm your shipping address and payment method before placing your order.</p>
+    <hr />
+
+    <div class="row">
+        
+        <div class="col-md-7">
+            <div class="card mb-3">
+                <div class="card-header fw-bold">Shipping Address</div>
+                <div class="card-body">
+                    <p class="card-text">@Model.ShippingAddress</p>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header fw-bold">Payment Method</div>
+                <div class="card-body">
+                    <p class="card-text">
+                        @if (Model.SelectedPaymentMethod == "COD")
+                        {
+                            <span class="badge bg-secondary fs-6">Cash on Delivery (COD)</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success fs-6">PayMongo Online Payment</span>
+                        }
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="col-md-5">
+            <div class="card mb-3">
+                <div class="card-header fw-bold">Order Items</div>
+                <ul class="list-group list-group-flush">
+                    @foreach (var item in Model.Items)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>@item.ProductName</strong><br />
+                                <small class="text-muted">Qty: @item.Quantity x ₱@item.UnitPrice.ToString("N2")</small>
+                            </div>
+                            <span class="fw-bold">₱@item.LineTotal.ToString("N2")</span>
+                        </li>
+                    }
+                </ul>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <h5>Total Amount:</h5>
+                    <h4 class="text-primary">₱@Model.TotalPrice.ToString("N2")</h4>
+                </div>
+            </div>
+
+            <form asp-action="ConfirmPayment" method="post">
+                @Html.AntiForgeryToken()
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-success btn-lg">Place Order Now</button>
+                    <a asp-action="Checkout" class="btn btn-outline-secondary">Edit Information</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

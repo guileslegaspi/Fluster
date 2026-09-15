@@ -1,0 +1,61 @@
+﻿
+@model OnlineMarketplace.Models.OrderModel
+
+@{
+    ViewData["Title"] = "Order Confirmation";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white text-center py-3">
+                    <h3 class="mb-0">Order Placed Successfully!</h3>
+                </div>
+                <div class="card-body p-4">
+                    <p class="fs-5 text-muted text-center">
+                        Thank you for your purchase. We have notified the seller to prepare your order.
+                    </p>
+
+                    <hr />
+
+                    <h5>Order Details</h5>
+                    <p class="mb-1"><strong>Order ID:</strong> #@Model.OrderId</p>
+                    <p class="mb-1"><strong>Date:</strong> @Model.OrderDate.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt")</p>
+                    <p class="mb-3"><strong>Status:</strong> <span class="badge bg-info text-dark">@Model.Status</span></p>
+
+                    <table class="table align-middle mt-3">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Unit Price</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var detail in Model.Details)
+                            {
+                                <tr>
+                                    <td>@detail.Product?.ProductName</td>
+                                    <td>@detail.Quantity</td>
+                                    <td>₱@detail.UnitPrice.ToString("N2")</td>
+                                    <td class="text-end fw-bold">₱@detail.LineTotal.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-2 border-top">
+                        <h4>Total Paid:</h4>
+                        <h4 class="text-success fw-bold">₱@Model.TotalPrice.ToString("N2")</h4>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-primary px-4">Continue Shopping</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

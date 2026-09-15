@@ -1,0 +1,229 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model IEnumerable<OnlineMarketplace.Models.CartModel>
+
+@{
+    ViewData["Title"] = "Shopping Cart";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Shopping Cart</h2>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center py-5">
+            <h4>Your cart is empty!</h4>
+            <p>Explore items on the marketplace and add them to your cart.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-2">Browse Products</a>
+        </div>
+    }
+    else
+    {
+        <form asp-controller="Purchasing" asp-action="Checkout" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th style="width: 40px;">
+                                        <input type="checkbox" id="selectAll" class="form-check-input" checked onchange="toggleSelectAll(this)" />
+                                    </th>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Subtotal</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var cartList = Model.ToList();
+                                }
+                                @for (int i = 0; i < cartList.Count; i++)
+                                {
+                                    var item = cartList[i];
+                                    var itemSubtotal = (item.Product?.Price ?? 0) * item.Quantity;
+
+                                    <tr>
+                                        <td>
+                                            
+                                            <input type="hidden" name="Items.Index" value="@i" />
+
+                                            <input type="hidden" name="Items[@i].CartId" value="@item.CartId" />
+                                            <input type="hidden" name="Items[@i].ProductId" value="@item.ProductId" />
+                                            <input type="hidden" name="Items[@i].ProductName" value="@item.Product?.ProductName" />
+                                            <input type="hidden" name="Items[@i].UnitPrice" value="@item.Product?.Price" />
+
+                                            
+                                            <input type="checkbox"
+                                                   name="Items[@i].IsSelected"
+                                                   value="true"
+                                                   class="form-check-input item-checkbox"
+                                                   data-price="@(item.Product?.Price ?? 0)"
+                                                   data-quantity="@item.Quantity"
+                                                   checked
+                                                   onchange="calculateSummary()" />
+                                        </td>
+                                        <td class="fw-bold">@item.Product?.ProductName</td>
+                                        <td>₱@item.Product?.Price.ToString("N2")</td>
+                                        <td style="width: 120px;">
+                                            <input type="number"
+                                                   name="Items[@i].Quantity"
+                                                   value="@item.Quantity"
+                                                   min="1"
+                                                   max="99"
+                                                   class="form-control form-control-sm item-quantity"
+                                                   data-cartid="@item.CartId"
+                                                   data-price="@(item.Product?.Price ?? 0)"
+                                                   onchange="updateQuantity(this)" />
+                                        </td>
+                                        <td class="fw-bold text-success">₱@itemSubtotal.ToString("N2")</td>
+                                        <td>
+                                            <button type="submit"
+                                                    asp-controller="Purchasing"
+                                                    asp-action="RemoveFromCart"
+                                                    asp-route-cartId="@item.CartId"
+                                                    class="btn btn-outline-danger btn-sm">
+                                                Remove
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <h4 class="card-title mb-3">Order Summary</h4>
+                            <hr />
+
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Selected Items:</span>
+                                <span id="summaryItemCount" class="fw-bold">0</span>
+                            </div>
+
+                            <div class="d-flex justify-content-between mb-3 fs-5">
+                                <strong>Total Price:</strong>
+                                <strong id="summaryGrandTotal" class="text-success">₱0.00</strong>
+                            </div>
+
+                            <button type="submit" id="checkoutBtn" class="btn btn-warning w-100 fw-bold text-dark py-2">
+                                Proceed to Checkout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function calculateSummary() {
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            let total = 0;
+            let checkedCount = 0;
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    const price = parseFloat(cb.getAttribute('data-price')) || 0;
+                    const quantity = parseInt(cb.getAttribute('data-quantity')) || 1;
+                    total += price * quantity;
+                    checkedCount++;
+                }
+            });
+
+            document.getElementById('summaryItemCount').innerText = checkedCount;
+            document.getElementById('summaryGrandTotal').innerText = `₱${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+            
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            if (checkoutBtn) {
+                checkoutBtn.disabled = checkedCount === 0;
+            }
+        }
+
+        function toggleSelectAll(selectAllCb) {
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = selectAllCb.checked;
+            });
+            calculateSummary();
+        }
+
+        function updateQuantity(input) {
+            const cartId = input.getAttribute('data-cartid');
+            const price = parseFloat(input.getAttribute('data-price')) || 0;
+
+
+			let quantity = parseInt(input.value) || 1;
+            if(quantity < 1) {
+                quantity = 1;
+                input.value = quantity;
+            } else if (quantity > 99) {
+                quantity = 99;
+                input.value = quantity;
+			}
+            
+            const checkbox = document.querySelector(`.item-checkbox[value="${cartId}"]`);
+            if (checkbox) {
+                checkbox.setAttribute('data-quantity', quantity);
+            }
+            
+            const subtotalCell = input.closest('tr').querySelector('td:nth-child(5)');
+            if (subtotalCell) {
+                const newSubtotal = price * quantity;
+                subtotalCell.innerText = `₱${newSubtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            }
+            calculateSummary();
+		}
+
+        function updateQuantity(input) {
+            let quantity = parseInt(input.value) || 1;
+            if (quantity < 1) {
+                quantity = 1;
+                input.value = quantity;
+            } else if (quantity > 99) {
+                quantity = 99;
+                input.value = quantity;
+            }
+
+            const price = parseFloat(input.getAttribute('data-price')) || 0;
+            const row = input.closest('tr');
+
+            
+            const checkbox = row.querySelector('.item-checkbox');
+            if (checkbox) {
+                checkbox.setAttribute('data-quantity', quantity);
+            }
+
+            
+            const subtotalCell = row.querySelector('td:nth-child(5)');
+            if (subtotalCell) {
+                const newSubtotal = price * quantity;
+                subtotalCell.innerText = `₱${newSubtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            }
+
+            calculateSummary();
+        }
+
+     
+        document.addEventListener('DOMContentLoaded', calculateSummary);
+
+    </script>
+}

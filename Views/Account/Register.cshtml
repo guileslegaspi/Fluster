@@ -1,0 +1,97 @@
+﻿@model OnlineMarketplace.Models.ApplicationUserModel
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="row justify-content-center py-5">
+    <div class="col-md-6">
+
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
+
+                <h2 class="fw-bold mb-2">Create your Fluster account</h2>
+
+                <p class="text-muted mb-4">
+                    Join the marketplace and start buying or selling.
+                </p>
+
+                <form asp-action="Register" method="post">
+
+                    <div asp-validation-summary="ModelOnly"
+                         class="text-danger mb-3">
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="UserName" class="form-label">
+                            Username
+                        </label>
+
+                        <input asp-for="UserName"
+                               class="form-control" />
+
+                        <span asp-validation-for="UserName"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="EmailAddress" class="form-label">
+                            Email Address
+                        </label>
+
+                        <input asp-for="EmailAddress"
+                               class="form-control"
+                               type="email" />
+
+                        <span asp-validation-for="EmailAddress"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="PasswordHash" class="form-label">
+                            Password
+                        </label>
+
+                        <input asp-for="PasswordHash"
+                               class="form-control"
+                               type="password" />
+
+                        <span asp-validation-for="PasswordHash"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="PhoneNumber" class="form-label">
+                            Phone Number <span class="text-muted">(Optional)</span>
+                        </label>
+
+                        <input asp-for="PhoneNumber"
+                               class="form-control" />
+
+                        <span asp-validation-for="PhoneNumber"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-primary w-100">
+                        Create Account
+                    </button>
+
+                </form>
+
+                <p class="mt-3 mb-0 text-muted">
+                    Already have an account?
+                    <a asp-action="Login">
+                        Sign in here
+                    </a>.
+                </p>
+
+            </div>
+        </div>
+
+    </div>
+</div>

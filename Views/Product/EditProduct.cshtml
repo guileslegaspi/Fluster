@@ -1,0 +1,196 @@
+﻿@model OnlineMarketplace.Models.ProductModel
+
+@{
+    ViewData["Title"] = "Edit Item";
+}
+
+<div class="row justify-content-center py-5">
+    <div class="col-lg-7">
+
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
+
+                <div class="mb-4">
+                    <h2 class="fw-bold mb-1">Edit Item</h2>
+                    <p class="text-muted mb-0">
+                        Update your product listing on the Fluster marketplace.
+                    </p>
+                </div>
+
+                <hr class="mb-4" />
+
+                <form asp-action="EditProduct"
+                      method="post"
+                      enctype="multipart/form-data">
+
+                    <input type="hidden" asp-for="ProductId" />
+                    <input type="hidden" asp-for="SellerId" />
+
+                    <h5 class="fw-bold mb-3">Product Information</h5>
+
+                    <div class="mb-3">
+                        <label asp-for="ProductName"
+                               class="form-label fw-semibold">
+                            Product Name
+                        </label>
+                        <input asp-for="ProductName"
+                               class="form-control"
+                               placeholder="e.g. Vintage Camera" />
+                        <span asp-validation-for="ProductName"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Category"
+                               class="form-label fw-semibold">
+                            Category
+                        </label>
+                        <select asp-for="Category"
+                                class="form-select"
+                                asp-items="ViewBag.CategorySelectList">
+                            <option value="">
+                                -- Select Category --
+                            </option>
+                        </select>
+                        <span asp-validation-for="Category"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Price"
+                                   class="form-label fw-semibold">
+                                Price (₱)
+                            </label>
+                            <input asp-for="Price"
+                                   class="form-control"
+                                   type="number"
+                                   step="0.01"
+                                   placeholder="0.00" />
+                            <span asp-validation-for="Price"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Stock"
+                                   class="form-label fw-semibold">
+                                Quantity / Stock
+                            </label>
+                            <input asp-for="Stock"
+                                   class="form-control"
+                                   type="number" />
+                            <span asp-validation-for="Stock"
+                                  class="text-danger">
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="ProductDescription"
+                               class="form-label fw-semibold">
+                            Description
+                        </label>
+                        <textarea asp-for="ProductDescription"
+                                  class="form-control"
+                                  rows="4"
+                                  placeholder="Describe your item, its condition, and anything buyers should know...">
+                        </textarea>
+                        <span asp-validation-for="ProductDescription"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <h5 class="fw-bold mb-1">Product Image</h5>
+                    <p class="text-muted small mb-3">
+                        Keep the current image or replace it with a new image or web URL.
+                    </p>
+
+                    <div class="border rounded-4 p-3 p-md-4 bg-light mb-4">
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                Current Image
+                            </label>
+
+                            <div class="text-center">
+                                @if (!string.IsNullOrWhiteSpace(Model.Image))
+                                {
+                                    <img src="@Model.Image"
+                                         class="img-fluid rounded-4 border shadow-sm"
+                                         style="max-height: 240px; object-fit: contain;"
+                                         alt="@Model.ProductName" />
+                                }
+                                else
+                                {
+                                    <div class="text-muted py-4">
+                                        No product image available.
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ImageFile"
+                                   class="form-label fw-semibold">
+                                Upload New Image
+                            </label>
+
+                            <input asp-for="ImageFile"
+                                   class="form-control"
+                                   type="file"
+                                   accept="image/jpeg,image/png" />
+
+                            <span asp-validation-for="ImageFile"
+                                  class="text-danger">
+                            </span>
+
+                            <div class="form-text">
+                                JPG or PNG images are supported.
+                            </div>
+                        </div>
+
+                        <div class="text-center text-muted small fw-semibold my-3">
+                            OR
+                        </div>
+
+                        <div>
+                            <label asp-for="Image"
+                                   class="form-label fw-semibold">
+                                Image Web URL
+                            </label>
+
+                            <input asp-for="Image"
+                                   class="form-control"
+                                   placeholder="https://..." />
+
+                            <span asp-validation-for="Image"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
+                        <button type="submit"
+                                class="btn btn-warning fw-bold px-4 flex-grow-1">
+                            Save Changes
+                        </button>
+
+                        <a asp-action="MyListings"
+                           class="btn btn-outline-secondary px-4">
+                            Cancel
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
